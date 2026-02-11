@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<title>Controle de Usuários - Cloud</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+		<link rel="stylesheet" href="style.css">
+
+		<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+	</head>
+	<body>
+		<div id="loadingOverlay" class="loading-overlay">
+			<div class="spinner"></div>
+			<p>Processando...</p>
+		</div>
+		<div id="toastContainer" class="toast-container"></div>
+		<div class="wrap">
+			<div class="topbar">
+				<div class="brand">
+					<h1>Controle de Acerto <span style="font-size: 10px; opacity: 0.5;">CLOUD</span></h1>
+					<p class="sub">Consulta aberta | Admin trancado</p>
+				</div>
+				<div class="row">
+					<button class="ghost" id="btnLogout" type="button" style="display:none;">
+						🚪 Sair do Admin
+					</button>
+				</div>
+			</div>
+
+			<div class="card">
+				<div class="tabs">
+					<button class="tabbtn active" data-main="mainConsulta">🔎 Consulta</button>
+					<button class="tabbtn" data-main="mainAdmin">🔒 Admin</button>
+				</div>
+
+				<div id="mainConsulta" class="tab active">
+					<div class="row" style="margin-bottom:10px;">
+						<div style="min-width:260px; flex:1; max-width:420px;">
+							<label for="fBancoConsulta">Banco</label>
+							<select id="fBancoConsulta"></select>
+						</div>
+						<span class="spacer"></span>
+						<button class="ghost" id="btnRecarregar" type="button">🔄 Recarregar</button>
+					</div>
+
+					<div class="tabs">
+						<button class="tabbtn active" data-consulta="cTodos">📋 Todos</button>
+						<button class="tabbtn" data-consulta="cBuscar">🔎 Buscar</button>
+						<button class="tabbtn" data-consulta="cExportar">⬇️ Exportar</button>
+					</div>
+
+					<div id="cTodos" class="tab active">
+						<div class="tablewrap">
+							<table>
+								<thead>
+									<tr>
+										<th>Banco</th>
+										<th>Data/Hora</th>
+										<th>Nome</th>
+										<th>CPF</th>
+										<th>Tipo</th>
+										<th>Motivo</th>
+										<th>Arquivo</th>
+										<th>Excluir</th>
+									</tr>
+								</thead>
+								<tbody id="tbodyTodos"></tbody>
+							</table>
+						</div>
+					</div>
+
+					<div id="cBuscar" class="tab">
+						<div class="row" style="margin-top:10px;">
+							<div style="flex:1; min-width:260px;">
+								<input id="q" placeholder="CPF (11 dígitos) ou nome...">
+							</div>
+							<button class="primary" id="btnBuscar" type="button">Buscar</button>
+							<button class="ghost" id="btnLimparBusca" type="button">Limpar</button>
+						</div>
+						<div class="tablewrap">
+							<table>
+								<thead>
+									<tr>
+										<th>Banco</th>
+										<th>Data/Hora</th>
+										<th>Nome</th>
+										<th>CPF</th>
+										<th>Tipo</th>
+										<th>Motivo</th>
+										<th>Arquivo</th>
+										<th>Excluir</th>
+									</tr>
+								</thead>
+								<tbody id="tbodyBusca"></tbody>
+							</table>
+						</div>
+					</div>
+
+					<div id="cExportar" class="tab">
+						<div class="row" style="margin-top:10px;">
+							<button class="primary" id="btnExportarConsulta" type="button">⬇️ Baixar CSV</button>
+						</div>
+					</div>
+				</div>
+
+				<div id="mainAdmin" class="tab">
+					<div class="section">
+						<h3>Novo Registro</h3>
+						<div style="display:grid; gap:12px; grid-template-columns:1fr 1fr;">
+							<div>
+								<label>Banco</label>
+								<select id="banco"></select>
+							</div>
+							<div>
+								<label>Tipo</label>
+								<select id="tipo">
+									<option value="BLOQUEIO">Bloqueio</option>
+									<option value="INATIVACAO">Inativação</option>
+								</select>
+							</div>
+							<div>
+								<label>CPF</label>
+								<input id="cpf" maxlength="14" placeholder="000.000.000-00">
+							</div>
+							<div>
+								<label>Nome</label>
+								<input id="nome">
+							</div>
+							<div style="grid-column: 1/-1;">
+								<label>Motivo</label>
+								<textarea id="motivo" placeholder="Descreva o motivo..."></textarea>
+							</div>
+						</div>
+						<div style="margin-top: 12px;">
+							<label>Anexo (Opcional)</label>
+							<input type="file" id="arquivoInput" style="padding: 8px;">
+						</div>
+						<div class="row" style="margin-top:15px;">
+							<button class="primary" id="btnSalvar">✅ Salvar na Nuvem</button>
+							<button id="btnLimpar">Limpar</button>
+							<button class="primary" id="btnResetLocal">Sair</button>
+						</div>
+						<div id="erro" class="error"></div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<div id="loginBack" class="modal-overlay">
+			<div class="card login-card">
+				<h2>🔒 Acesso Restrito</h2>
+				<label>Usuário</label>
+				<input id="loginUser">
+				<label>Senha</label>
+				<input id="loginPass" type="password">
+				<button class="primary" id="btnEntrar">Entrar</button>
+				<button class="ghost" id="btnCancelLogin">Cancelar</button>
+			</div>
+		</div>
+
+		<script type="module" src="main.js"></script>
+	</body>
+</html>
