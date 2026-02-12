@@ -186,6 +186,18 @@ async function renderBaseVendedores() {
 		.from('base_vendedores')
 		.select('*')
 		.order('nome', { ascending: true })
+
+	if (!data || data.length === 0) {
+		tbody.innerHTML = `
+				<tr>
+					<td colspan="3" style="text-align: center; padding: 20px; color: var(--text-muted);">
+						👥  Ninguém cadastrado na base de vendedores.
+					</td>
+				</tr>`
+		toggleLoading(false)
+		return
+	}
+
 	tbody.innerHTML = (data || [])
 		.map(
 			v =>
@@ -319,6 +331,17 @@ async function buscarRegistros() {
 function renderRows(rows, targetId) {
 	const tbody = $(targetId)
 	if (!tbody) return
+
+	if (!rows || rows.length === 0) {
+		tbody.innerHTML = `
+            <tr>
+                <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted); font-style: italic;">
+                    🚫 Nenhum registro encontrado.
+                </td>
+            </tr>`
+		return
+	}
+
 	tbody.innerHTML = rows
 		.map(r => {
 			const anexo = r.arquivo_url ? `<a href="${r.arquivo_url}" target="_blank">📎 Ver</a>` : '---'
@@ -385,6 +408,16 @@ async function renderReclamacoes() {
 	if (b) q = q.eq('banco', b)
 	if (busca) q = q.or(`nome.ilike.%${busca}%,cpf.ilike.%${onlyDigits(busca)}%`)
 	const { data } = await q
+
+	if (!data || data.length === 0) {
+		$('tbodyRec').innerHTML = `
+				<tr>
+					<td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">
+						📣 A lista de reclamações está vazia.
+					</td>
+				</tr>`
+		return
+	}
 	$('tbodyRec').innerHTML = (data || [])
 		.map(
 			r =>
@@ -460,6 +493,16 @@ async function renderHistoricoAdmin() {
 		.from('registros')
 		.select('*')
 		.order('created_at', { ascending: false })
+
+	if (!data || data.length === 0) {
+		$('tbodyHistorico').innerHTML = `
+				<tr>
+					<td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">
+						📭 O histórico de cadastros está vazio.
+					</td>
+				</tr>`
+		return
+	}
 	$('tbodyHistorico').innerHTML = (data || [])
 		.map(r => {
 			const badgeClass =
