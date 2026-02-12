@@ -4,18 +4,18 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<title>Controle de Usuários - Cloud</title>
-    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+		<link rel="icon" type="image/x-icon" href="/favicon.ico">
 		<link rel="stylesheet" href="style.css">
-
 		<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 		<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 	</head>
 	<body>
-		<div id="loadingOverlay" class="loading-overlay">
+		<div id="loadingOverlay" class="loading-overlay" style="display: none;">
 			<div class="spinner"></div>
 			<p>Processando...</p>
 		</div>
 		<div id="toastContainer" class="toast-container"></div>
+
 		<div class="wrap">
 			<div class="topbar">
 				<div class="brand">
@@ -74,7 +74,7 @@
 					<div id="cBuscar" class="tab">
 						<div class="row" style="margin-top:10px;">
 							<div style="flex:1; min-width:260px;">
-								<input id="q" placeholder="CPF (11 dígitos) ou nome...">
+								<input id="q" placeholder="CPF ou nome...">
 							</div>
 							<button class="primary" id="btnBuscar" type="button">Buscar</button>
 							<button class="ghost" id="btnLimparBusca" type="button">Limpar</button>
@@ -106,49 +106,249 @@
 				</div>
 
 				<div id="mainAdmin" class="tab">
-					<div class="section">
-						<h3>Novo Registro</h3>
-						<div style="display:grid; gap:12px; grid-template-columns:1fr 1fr;">
-							<div>
-								<label>Banco</label>
-								<select id="banco"></select>
+					<div class="adminHead">
+						<div class="adminTabsWrap">
+							<button class="tabbtn active" data-admin="aCadastrar">📝 Cadastrar</button>
+							<button class="tabbtn" data-admin="aVendedores">👥 Vendedores</button>
+							<button class="tabbtn" data-admin="aFrases">💬 Frases</button>
+							<button class="tabbtn" data-admin="aHistorico">📚 Histórico</button>
+							<button class="tabbtn" data-admin="aReclamacoes">📣 Reclamações</button>
+							<button class="tabbtn" data-admin="aAnalise">📊 Análise</button>
+						</div>
+					</div>
+
+					<div id="aCadastrar" class="tab active" style="margin-top:12px;">
+						<div class="section">
+							<h3>Novo Registro</h3>
+							<div style="display:grid; gap:12px; grid-template-columns:1fr 1fr;">
+								<div>
+									<label>Banco</label>
+									<select id="banco"></select>
+								</div>
+								<div>
+									<label>Tipo</label>
+									<select id="tipo">
+										<option value="BLOQUEIO">Bloqueio</option>
+										<option value="INATIVACAO">Inativação</option>
+									</select>
+								</div>
+								<div>
+									<label>CPF</label>
+									<input id="cpf" maxlength="14" placeholder="000.000.000-00">
+								</div>
+								<div>
+									<label>Nome</label>
+									<input id="nome" placeholder="Auto-preenchimento">
+								</div>
+								<div style="grid-column: 1/-1;">
+									<label>Frase Padrão</label>
+									<select id="motivoPadrao"></select>
+								</div>
+								<div style="grid-column: 1/-1;">
+									<label>Complemento / Opcional</label>
+									<textarea id="motivo" placeholder="Descreva o motivo..."></textarea>
+								</div>
 							</div>
-							<div>
-								<label>Tipo</label>
-								<select id="tipo">
-									<option value="BLOQUEIO">Bloqueio</option>
-									<option value="INATIVACAO">Inativação</option>
-								</select>
+							<div style="margin-top: 12px;">
+								<label>Anexo (Opcional)</label>
+								<input type="file" id="arquivoInput">
 							</div>
-							<div>
-								<label>CPF</label>
-								<input id="cpf" maxlength="14" placeholder="000.000.000-00">
-							</div>
-							<div>
-								<label>Nome</label>
-								<input id="nome">
-							</div>
-							<div style="grid-column: 1/-1;">
-								<label>Motivo</label>
-								<textarea id="motivo" placeholder="Descreva o motivo..."></textarea>
+							<div class="row" style="margin-top:15px;">
+								<button class="primary" id="btnSalvar">✅ Salvar na Nuvem</button>
+								<button id="btnLimpar">Limpar</button>
 							</div>
 						</div>
-						<div style="margin-top: 12px;">
-							<label>Anexo (Opcional)</label>
-							<input type="file" id="arquivoInput" style="padding: 8px;">
+					</div>
+
+					<div id="aVendedores" class="tab" style="margin-top:12px;">
+						<div class="section">
+							<h3>Gestão da Base de Vendedores</h3>
+							<div class="adminActions" style="margin-bottom: 15px;">
+								<label class="filebtn" style="margin-bottom: 0px;">
+									<input id="bases" type="file" multiple accept=".xlsx,.xls,.csv">
+									<button type="button" class="primary" id="btnCarregarBase">
+										📥 Carregar Planilha
+									</button>
+								</label>
+								<button class="ghost" id="btnModeloBase">⬇️ Baixar Modelo</button>
+								<button class="ghost" id="btnLimparBase" style="color: #ff4d6d;">
+									🗑️ Apagar Tudo
+								</button>
+							</div>
+							<div class="tablewrap" style="max-height: 400px;">
+								<table>
+									<thead>
+										<tr>
+											<th>CPF</th>
+											<th>Nome Completo</th>
+											<th>Ação</th>
+										</tr>
+									</thead>
+									<tbody id="tbodyBaseVendedores"></tbody>
+								</table>
+							</div>
 						</div>
-						<div class="row" style="margin-top:15px;">
-							<button class="primary" id="btnSalvar">✅ Salvar na Nuvem</button>
-							<button id="btnLimpar">Limpar</button>
-							<button class="primary" id="btnResetLocal">Sair</button>
+					</div>
+
+					<div id="aFrases" class="tab" style="margin-top:12px;">
+						<div class="section">
+							<h3>Gestão de Frases Padrão</h3>
+							<div class="row">
+								<input id="motivoNovo" placeholder="Nova frase..." style="flex: 1;">
+								<button class="primary" id="btnSalvarFrase">➕ Adicionar</button>
+							</div>
+							<div class="tablewrap" style="margin-top: 20px;">
+								<div id="listaFrases" style="padding: 10px;"></div>
+							</div>
 						</div>
-						<div id="erro" class="error"></div>
+					</div>
+
+					<div id="aHistorico" class="tab" style="margin-top:12px;">
+						<div class="section">
+							<h3>Histórico Administrativo</h3>
+							<div class="tablewrap">
+								<table>
+									<thead>
+										<tr>
+											<th>Banco</th>
+											<th>Data/Hora</th>
+											<th>Nome</th>
+											<th>CPF</th>
+											<th>Tipo</th>
+											<th>Motivo</th>
+											<th>Arq</th>
+											<th>Ação</th>
+										</tr>
+									</thead>
+									<tbody id="tbodyHistorico"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div id="aReclamacoes" class="tab" style="margin-top:12px;">
+						<div class="section">
+							<h3>Registrar Reclamação</h3>
+							<div style="display:grid; gap:12px; grid-template-columns:1fr 1fr;">
+								<div>
+									<label>Banco</label>
+									<select id="recBanco"></select>
+								</div>
+								<div>
+									<label>CPF</label>
+									<input id="recCpf" maxlength="14">
+								</div>
+								<div style="grid-column: 1 / -1;">
+									<label>Nome</label>
+									<input id="recNome">
+								</div>
+								<div style="grid-column: 1 / -1;">
+									<label>Descrição</label>
+									<textarea id="recDesc"></textarea>
+								</div>
+							</div>
+							<div class="row" style="margin-top:12px;">
+								<button class="primary" id="btnSalvarRec">Salvar</button>
+								<button class="ghost" id="btnLimparRec">Limpar</button>
+							</div>
+							<div class="divider"></div>
+							<div class="row">
+								<h3>Lista Reclamações</h3>
+								<span class="spacer"></span>
+								<div style="min-width:200px;">
+									<select id="fBancoRec"></select>
+								</div>
+								<div style="min-width:200px;">
+									<input id="buscaRec" placeholder="Filtrar...">
+								</div>
+							</div>
+							<div class="tablewrap">
+								<table>
+									<thead>
+										<tr>
+											<th>Banco</th>
+											<th>Data</th>
+											<th>Vendedor</th>
+											<th>CPF</th>
+											<th>Descrição</th>
+											<th>Ação</th>
+										</tr>
+									</thead>
+									<tbody id="tbodyRec"></tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+
+					<div id="aAnalise" class="tab" style="margin-top:12px;">
+						<div class="section">
+							<div class="row" style="margin-bottom:10px;">
+								<div style="min-width:240px; flex:1;">
+									<label>Banco</label>
+									<select id="fBancoAnalise"></select>
+								</div>
+								<div style="flex:1;">
+									<label>Buscar</label>
+									<input id="buscaAnalise" placeholder="CPF ou nome...">
+								</div>
+								<button class="smallbtn ghost" id="btnExportarAnalise">⬇️ CSV (Análise)</button>
+							</div>
+							<div
+								id="alertSugerido"
+								class="panel"
+								style="display:none; border-color: #ff4d6d; background: rgba(255,77,109,0.1); margin-bottom: 15px;"
+							>
+								<span class="badge suggest">⛔ Bloqueio sugerido</span><span
+									class="sub"
+									id="alertSugeridoTxt"
+								></span>
+							</div>
+							<div class="divider"></div>
+							<div class="twoCols">
+								<div>
+									<div class="tablewrap" style="max-height:520px;">
+										<table>
+											<thead>
+												<tr>
+													<th>Vendedor</th>
+													<th>CPF</th>
+													<th>Total</th>
+													<th>Status</th>
+													<th>Ações</th>
+												</tr>
+											</thead>
+											<tbody id="tbodyAnalise"></tbody>
+										</table>
+									</div>
+								</div>
+								<div>
+									<div
+										id="detPanel"
+										style="margin-bottom:10px; padding:10px; border-radius:8px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1);"
+									>
+										<div class="sub">Clique em <b>Ver</b>.</div>
+									</div>
+									<div class="tablewrap" style="max-height:420px;">
+										<table>
+											<thead>
+												<tr>
+													<th>Banco</th>
+													<th>Data</th>
+													<th>Descrição</th>
+												</tr>
+											</thead>
+											<tbody id="tbodyDet"></tbody>
+										</table>
+									</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
 		</div>
 
-		<div id="loginBack" class="modal-overlay">
+		<div id="loginBack" class="modal-overlay" style="display: none;">
 			<div class="card login-card">
 				<h2>🔒 Acesso Restrito</h2>
 				<label>Usuário</label>
@@ -159,7 +359,6 @@
 				<button class="ghost" id="btnCancelLogin">Cancelar</button>
 			</div>
 		</div>
-
 		<script type="module" src="main.js"></script>
 	</body>
 </html>

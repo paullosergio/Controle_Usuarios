@@ -36,11 +36,31 @@ body {
 
 .topbar {
 	display: flex;
-	align-items: flex-start;
+	align-items: center; /* Alinha verticalmente ao centro */
 	justify-content: space-between;
 	gap: 16px;
 	margin-bottom: 24px;
-	flex-wrap: wrap;
+	width: 100%;
+}
+
+/* Força o botão de logout a ir para a direita se estiver dentro de um wrap de botões */
+.topbar .row {
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+}
+
+#btnLogout {
+	background: rgba(255, 77, 109, 0.15);
+	border: 1px solid rgba(255, 77, 109, 0.3);
+	color: #ff4d6d;
+	font-weight: bold;
+	display: none; /* Fica escondido até o login ser feito */
+}
+
+#btnLogout:hover {
+	background: #ff4d6d;
+	color: white;
 }
 
 .brand {
@@ -92,6 +112,45 @@ h1 {
 	gap: 12px;
 	flex-wrap: wrap;
 	align-items: center;
+}
+
+.adminHead {
+	margin-top: 6px;
+	padding: 12px;
+	border-radius: var(--radius2);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	background: rgba(0, 0, 0, 0.1);
+}
+
+.adminHeadRow {
+	display: flex;
+	gap: 12px;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+}
+
+.adminActions {
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	align-items: center;
+}
+
+.adminTabsWrap {
+	margin-top: 10px;
+	padding-top: 10px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: flex-start;
+}
+
+.filebtn input {
+	display: none;
 }
 
 .spacer {
@@ -176,7 +235,7 @@ button {
 }
 
 button.primary {
-	border: 1px solid rgba(79, 140, 255, 0.6);
+	border: 0px solid rgba(79, 140, 255, 0.6);
 	background: linear-gradient(135deg, rgba(79, 140, 255, 0.95), rgba(124, 58, 237, 0.85));
 	box-shadow: 0 10px 26px rgba(79, 140, 255, 0.18);
 }
@@ -193,13 +252,6 @@ button:hover {
 button:active {
 	transform: translateY(0);
 }
-
-#btnResetLocal {
-	background: rgba(255, 165, 0, 0.1);
-	border-color: rgba(255, 165, 0, 0.3);
-	color: orange;
-}
-
 /* Tables */
 .tablewrap {
 	overflow-x: auto;
@@ -445,4 +497,57 @@ tr:hover {
 		transform: translateX(100%);
 		opacity: 0;
 	}
+}
+
+/* Layout de duas colunas para a análise */
+.twoCols {
+	display: grid;
+	gap: 20px;
+	grid-template-columns: 1fr 1fr;
+}
+
+/* Painel de detalhes e alertas */
+.panel {
+	padding: 12px;
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.05);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Divisor horizontal */
+.divider {
+	height: 1px;
+	background: rgba(255, 255, 255, 0.1);
+	margin: 15px 0;
+}
+
+/* Ajuste para botões pequenos */
+.smallbtn {
+	padding: 8px 12px;
+	font-size: 12px;
+	border-radius: 10px;
+}
+
+/* Badge específica para alertas críticos */
+.badge.suggest {
+	background: #ff4d6d;
+	color: white;
+}
+
+/* Responsividade: em telas pequenas vira uma coluna só */
+@media (max-width: 920px) {
+	.twoCols {
+		grid-template-columns: 1fr;
+	}
+}
+
+/* Estilo para chave-valor no painel de detalhes (opcional) */
+.kv {
+	display: grid;
+	grid-template-columns: 100px 1fr;
+	gap: 8px;
+	font-size: 13px;
+}
+.kv b {
+	color: var(--muted);
 }
