@@ -169,7 +169,7 @@ function setupEventListeners() {
 	$('btnExportarConsulta').onclick = exportarCSV
 	$('btnExportarAnalise').onclick = exportarAnaliseCSV
 	$('btnLogout').onclick = () => {
-		if (confirm('Limpar cache?')) {
+		if (confirm('Deseja realmente sair?')) {
 			localStorage.clear()
 			sessionStorage.clear()
 			window.location.reload()
@@ -326,7 +326,13 @@ function renderRows(rows, targetId) {
 				sessionStorage.getItem('admin') === 'true'
 					? `<button onclick="window.confirmarExclusao('${r.id}', '${r.arquivo_url}')" class="btn-del">🗑️</button>`
 					: '---'
-			return `<tr><td>${r.banco}</td><td>${new Date(r.created_at).toLocaleString('pt-BR')}</td><td>${r.nome}</td><td class="mono">${formatCPF(r.cpf)}</td><td><span class="badge">${r.tipo}</span></td><td>${r.motivo}</td><td style="text-align:center;">${anexo}</td><td style="text-align:center;">${del}</td></tr>`
+			const badgeClass =
+				r.tipo === 'BLOQUEIO'
+					? 'badge bloqueio'
+					: r.tipo === 'INATIVACAO'
+						? 'badge inativacao'
+						: 'badge'
+			return `<tr><td>${r.banco}</td><td>${new Date(r.created_at).toLocaleString('pt-BR')}</td><td>${r.nome}</td><td class="mono">${formatCPF(r.cpf)}</td><td><span class="${badgeClass}">${r.tipo}</span></td><td>${r.motivo}</td><td style="text-align:center;">${anexo}</td><td style="text-align:center;">${del}</td></tr>`
 		})
 		.join('')
 }
@@ -434,7 +440,18 @@ window.renderDetalhes = async cpf => {
 				`<tr><td>${r.banco}</td><td class="mono">${new Date(r.created_at).toLocaleString('pt-BR')}</td><td>${r.desc_reclamacao}</td></tr>`
 		)
 		.join('')
-	$('cpfSelecionadoInfo').innerText = `CPF: ${formatCPF(cpf)}`
+	if ($('detPanel')) {
+		$('detPanel').innerHTML = `
+			<div class="kv">
+				<b>CPF:</b>
+				<span class="mono">${formatCPF(cpf)}</span>
+			</div>
+			<div class="kv">
+				<b>Total:</b>
+				<span><b>${data.length}</b> reclamações</span>
+			</div>
+		`
+	}
 }
 
 // --- HISTÓRICO E FRASES ---
@@ -444,10 +461,15 @@ async function renderHistoricoAdmin() {
 		.select('*')
 		.order('created_at', { ascending: false })
 	$('tbodyHistorico').innerHTML = (data || [])
-		.map(
-			r =>
-				`<tr><td>${r.banco}</td><td class="mono">${new Date(r.created_at).toLocaleString('pt-BR')}</td><td>${r.nome}</td><td class="mono">${formatCPF(r.cpf)}</td><td>${r.tipo}</td><td>${r.motivo}</td><td>${r.arquivo_url ? '📎' : ''}</td><td><button onclick="window.confirmarExclusao('${r.id}', '${r.arquivo_url}')" class="btn-del">🗑️</button></td></tr>`
-		)
+		.map(r => {
+			const badgeClass =
+				r.tipo === 'BLOQUEIO'
+					? 'badge bloqueio'
+					: r.tipo === 'INATIVACAO'
+						? 'badge inativacao'
+						: 'badge'
+			return `<tr><td>${r.banco}</td><td class="mono">${new Date(r.created_at).toLocaleString('pt-BR')}</td><td>${r.nome}</td><td class="mono">${formatCPF(r.cpf)}</td><td><span class="${badgeClass}">${r.tipo}</span></td><td>${r.motivo}</td><td>${r.arquivo_url ? '📎' : ''}</td><td><button onclick="window.confirmarExclusao('${r.id}', '${r.arquivo_url}')" class="btn-del">🗑️</button></td></tr>`
+		})
 		.join('')
 }
 async function renderFrases() {
